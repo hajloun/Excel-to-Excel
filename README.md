@@ -1,24 +1,55 @@
-PySimpleGUI je v poslední verzi placený, proto byla použita starší verze
-kvůli starší verzi je vyžadován python 11
-pip install co je na odkazu nejspíše nebude fungovat, proto je potřeba soubor stáhnout
+# Excel-to-Excel
 
-PySimpleGUI:
-https://pypi.org/project/PySimpleGUI-4-foss/#files
+## Informace
 
-ideální je .whl soubor dát do složky ve které je projekt a píše se do konzole
+- **PySimpleGUI** je v poslední verzi placený, proto byla použita starší verze
+- Kvůli starší verzi je vyžadován **Python 3.11**
+- `pip install` z odkazu nejspíše nebude fungovat, proto je potřeba soubor stáhnout manuálně
 
+## Stažení PySimpleGUI
 
-INSTALACE:
-ve složce připravené pro projekt:
+Stáhněte si PySimpleGUI z následujícího odkazu:
+**https://pypi.org/project/PySimpleGUI-4-foss/#files**
+
+> Ideální je stáhnout `.whl` soubor a umístit ho do složky, ve které je projekt
+
+## Instalace
+
+### 1. Klonování repositáře
+```bash
 git clone https://github.com/hajloun/Excel-to-Excel.git
+```
+
+### 2. Vytvoření virtuálního prostředí
+```bash
 py -3.11 -m venv NAZEV_VIRTUALNIHO_PROSTREDI
+```
+
+### 3. Aktivace virtuálního prostředí
+```bash
 .\venv\Scripts\activate
+```
+
+### 4. Přechod do složky projektu
+```bash
 cd .\Excel-to-Excel\
+```
+
+### 5. Instalace knihoven
+```bash
 pip install -r requirements.txt
 pip install PySimpleGUI_4_foss-4.60.4.1-py3-none-any.whl
+```
 
-spuštění programu:
+## ▶️ Spuštění programu
+
+```bash
 python main.py
+```
 
-při každém zapnutí VSC je potřeba aktivovat virtuální prostředí
+## 🔄 Při každém zapnutí VS Code
+
+Je potřeba aktivovat virtuální prostředí:
+```bash
 .\venv\Scripts\activate
+```
