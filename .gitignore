@@ -1,0 +1,7 @@
+venv_pysimplegui/
+virtual_folder/
+__pycache__/
+*.pyc
+dist/
+build/
+*.spec
