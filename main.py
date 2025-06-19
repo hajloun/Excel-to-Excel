@@ -1,6 +1,7 @@
 import PySimpleGUI as sg # type: ignore
 import pandas as pd
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 
 
 # LAYOUT
@@ -124,7 +125,6 @@ while True:
                 old_range = table.ref
                 new_max_row = sheet.max_row
                 new_range = f"{old_range.split(':')[0]}:{old_range.split(':')[1][0]}{new_max_row}"
-                from openpyxl.utils import get_column_letter
                 start_cell, end_cell = old_range.split(':')
                 end_col_letter = get_column_letter(sheet.max_column)
                 new_range = f"{start_cell}:{end_col_letter}{new_max_row}"
