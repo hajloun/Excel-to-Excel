@@ -101,7 +101,6 @@ while True:
 
         # FEDZIS OFICAL
         try:
-            
             print("Spouštím Excel na pozadí...")
             
             target_path_abs = os.path.abspath(target_path)
@@ -111,22 +110,24 @@ while True:
             excel.DisplayAlerts = False
             
             workbook = excel.Workbooks.Open(target_path_abs)
-            
-            sheet = workbook.Sheets(selected_sheet_name)
+            sheet = workbook.Sheets(sheet_names)
+
             last_row = sheet.Cells(sheet.Rows.Count, "A").End(-4162).Row
             new_row_index = last_row + 1
-            
+           
             print(f"Nová data budou vložena na řádek {new_row_index}.")
-            
+           
             new_row_dict = {}
             for source_col, target_col in COLUMN_MAPPING.items():
                 if source_col in found_row:
                     new_row_dict[target_col] = found_row[source_col]
-                    
+                   
+            
             for col_idx in range(1, sheet.UsedRange.Columns.Count + 1):
                 header_name = sheet.Cells(10, col_idx).Value
                 if header_name in new_row_dict:
-                    sheet.Cells(new_row_index, col_idx).Value = new_row_dict[header_name]
+                    value_to_write = str(new_row_dict[header_name])
+                    sheet.Cells(new_row_index, col_idx).Value = value_to_write
 
             workbook.Save()
             workbook.Close(SaveChanges=False)
@@ -147,7 +148,6 @@ while True:
                 pass
             continue
         
-
         print("-" * 30)
 
 window.close()
