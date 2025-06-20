@@ -55,7 +55,7 @@ while True:
         # LOAD FILE
         df_source = None
         try:
-            df_source = pd.read_excel(source_path, engine="openpyxl")
+            df_source = pd.read_excel(source_path, engine="openpyxl", header=9)
 
         except FileNotFoundError:
             print(f"CHYBA: Zdrojový soubor nebyl nalezen na cestě: {source_path}")
@@ -121,7 +121,7 @@ while True:
                     sheet.cell(row=last_table_row, column=idx).value = new_row_dict[col_name]
         table.ref = f"{start_cell}:{get_column_letter(end_col_idx)}{last_table_row + 1}"
         workbook.save(target_path)
-         print("\nHotovo! Řádek byl vložen do tabulky.")
+        print("\nHotovo! Řádek byl vložen do tabulky.")
 
         except Exception as e:
             print(f"CHYBA: Vyskytla se chyba při zpracování cílového souboru: {e}")
