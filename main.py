@@ -2,6 +2,7 @@ import PySimpleGUI as sg # type: ignore
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
+from openpyxl.utils import column_index_from_string
 
 
 # LAYOUT
@@ -97,54 +98,37 @@ while True:
         
 
         # PREPARE ROW AND SAVE WITH OPENPYXL, EXTEND TABLE
-        selected_sheet_name = values['-SHEET_NAME-']
-        if not selected_sheet_name:
-            print("CHYBA: Nebyl vybrán žádný cílový list.")
-            continue
         try:
             workbook = load_workbook(target_path)
             sheet = workbook[selected_sheet_name]
-            new_row_dict = {}
-
-            for source_col, target_col in COLUMN_MAPPING.items():
-                if source_col in found_row and target_col in [cell.value for cell in sheet[1]]:
-                    new_row_dict[target_col] = found_row[source_col]
-
-            if not new_row_dict:
-                print("CHYBA: Nepodařilo se zkopírovat žádná data.")
+        if not sheet.tables:
+                print("CHYBA: V cílovém listu nebyl nalezen žádný formátovaný objekt Tabulka.")
                 continue
+        table_name = list(sheet.tables.keys())[0]
+        table = sheet.tables[table_name]
+        start_cell, end_cell = table.ref.split(':')
+        end_col_idx = column_index_from_string(end_cell.rstrip('0123456789'))
+        last_table_row = int(''.join(filter(str.isdigit, end_cell)))
+        sheet.insert_rows(last_table_row)
+        print(f"Prázdný řádek byl vložen na pozici {last_table_row}.")
+        new_row_dict = {}
+        for source_col, target_col in COLUMN_MAPPING.items():
+                if source_col in found_row:
+                    new_row_dict[target_col] = found_row[source_col]
+        target_columns_order = [cell.value for cell in sheet[10]]
+        for idx, col_name in enumerate(target_columns_order, 1):
+                if col_name in new_row_dict:
+                    sheet.cell(row=last_table_row, column=idx).value = new_row_dict[col_name]
+        table.ref = f"{start_cell}:{get_column_letter(end_col_idx)}{last_table_row + 1}"
+        workbook.save(target_path)
+         print("\nHotovo! Řádek byl vložen do tabulky.")
 
-            target_columns_order = [cell.value for cell in sheet[1]]
-            new_row_values = [new_row_dict.get(col_name, '') for col_name in target_columns_order]
-            sheet.append(new_row_values)
-            print("Nový řádek byl přidán.")
-
-            if sheet.tables:
-                table_name = list(sheet.tables.keys())[0]
-                table = sheet.tables[table_name]
-                old_range = table.ref
-                new_max_row = sheet.max_row
-                new_range = f"{old_range.split(':')[0]}:{old_range.split(':')[1][0]}{new_max_row}"
-                start_cell, end_cell = old_range.split(':')
-                end_col_letter = get_column_letter(sheet.max_column)
-                new_range = f"{start_cell}:{end_col_letter}{new_max_row}"
-                table.ref = new_range
-                print(f"Rozsah tabulky '{table_name}' byl aktualizován na '{new_range}'.")
-
-            workbook.save(target_path)
-            
-            print("\nHotovo! Data byla úspěšně zkopírována.")
-
-        except FileNotFoundError:
-            print(f"CHYBA: Cílový soubor nebyl nalezen na cestě: {target_path}")
-            continue
-        except PermissionError:
-            print("CHYBA: Cílový soubor je pravděpodobně otevřený v Excelu.")
-            print("Zavřete ho a zkuste operaci znovu.")
-            continue
         except Exception as e:
-            print(f"CHYBA: Nepodařilo se uložit data do cílového souboru: {e}")
+            print(f"CHYBA: Vyskytla se chyba při zpracování cílového souboru: {e}")
+            if 'PermissionError' in str(e):
+                print("Není soubor otevřený v Excelu?")
             continue
+        
 
         print("-" * 30)
 
