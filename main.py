@@ -102,8 +102,8 @@ while True:
             workbook = load_workbook(target_path)
             sheet = workbook[selected_sheet_name]
         if not sheet.tables:
-                print("CHYBA: V cílovém listu nebyl nalezen žádný formátovaný objekt Tabulka.")
-                continue
+            print("CHYBA: V cílovém listu nebyl nalezen žádný formátovaný objekt Tabulka.")
+            continue
         table_name = list(sheet.tables.keys())[0]
         table = sheet.tables[table_name]
         start_cell, end_cell = table.ref.split(':')
@@ -113,12 +113,12 @@ while True:
         print(f"Prázdný řádek byl vložen na pozici {last_table_row}.")
         new_row_dict = {}
         for source_col, target_col in COLUMN_MAPPING.items():
-                if source_col in found_row:
-                    new_row_dict[target_col] = found_row[source_col]
+            if source_col in found_row:
+                new_row_dict[target_col] = found_row[source_col]
         target_columns_order = [cell.value for cell in sheet[10]]
         for idx, col_name in enumerate(target_columns_order, 1):
-                if col_name in new_row_dict:
-                    sheet.cell(row=last_table_row, column=idx).value = new_row_dict[col_name]
+            if col_name in new_row_dict:
+                sheet.cell(row=last_table_row, column=idx).value = new_row_dict[col_name]
         table.ref = f"{start_cell}:{get_column_letter(end_col_idx)}{last_table_row + 1}"
         workbook.save(target_path)
         print("\nHotovo! Řádek byl vložen do tabulky.")
