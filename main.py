@@ -3,6 +3,8 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.utils import column_index_from_string
+import win32com.client as win32
+import os
 
 
 # LAYOUT
@@ -97,36 +99,52 @@ while True:
             continue
         
 
-        # PREPARE ROW AND SAVE WITH OPENPYXL, EXTEND TABLE
+        # FEDZIS OFICAL
         try:
-            workbook = load_workbook(target_path)
-            sheet = workbook[selected_sheet_name]
-        if not sheet.tables:
-            print("CHYBA: V cílovém listu nebyl nalezen žádný formátovaný objekt Tabulka.")
-            continue
-        table_name = list(sheet.tables.keys())[0]
-        table = sheet.tables[table_name]
-        start_cell, end_cell = table.ref.split(':')
-        end_col_idx = column_index_from_string(end_cell.rstrip('0123456789'))
-        last_table_row = int(''.join(filter(str.isdigit, end_cell)))
-        sheet.insert_rows(last_table_row)
-        print(f"Prázdný řádek byl vložen na pozici {last_table_row}.")
-        new_row_dict = {}
-        for source_col, target_col in COLUMN_MAPPING.items():
-            if source_col in found_row:
-                new_row_dict[target_col] = found_row[source_col]
-        target_columns_order = [cell.value for cell in sheet[10]]
-        for idx, col_name in enumerate(target_columns_order, 1):
-            if col_name in new_row_dict:
-                sheet.cell(row=last_table_row, column=idx).value = new_row_dict[col_name]
-        table.ref = f"{start_cell}:{get_column_letter(end_col_idx)}{last_table_row + 1}"
-        workbook.save(target_path)
-        print("\nHotovo! Řádek byl vložen do tabulky.")
+            
+            print("Spouštím Excel na pozadí...")
+            
+            target_path_abs = os.path.abspath(target_path)
+            
+            excel = win32.Dispatch('Excel.Application')
+            excel.Visible = False
+            excel.DisplayAlerts = False
+            
+            workbook = excel.Workbooks.Open(target_path_abs)
+            
+            sheet = workbook.Sheets(selected_sheet_name)
+            last_row = sheet.Cells(sheet.Rows.Count, "A").End(-4162).Row
+            new_row_index = last_row + 1
+            
+            print(f"Nová data budou vložena na řádek {new_row_index}.")
+            
+            new_row_dict = {}
+            for source_col, target_col in COLUMN_MAPPING.items():
+                if source_col in found_row:
+                    new_row_dict[target_col] = found_row[source_col]
+                    
+            for col_idx in range(1, sheet.UsedRange.Columns.Count + 1):
+                header_name = sheet.Cells(10, col_idx).Value
+                if header_name in new_row_dict:
+                    sheet.Cells(new_row_index, col_idx).Value = new_row_dict[header_name]
+
+            workbook.Save()
+            workbook.Close(SaveChanges=False)
+            excel.Quit()
+            
+            del sheet
+            del workbook
+            del excel
+            
+            print("\nHotovo! Soubor byl bezpečně uložen.")
 
         except Exception as e:
-            print(f"CHYBA: Vyskytla se chyba při zpracování cílového souboru: {e}")
-            if 'PermissionError' in str(e):
-                print("Není soubor otevřený v Excelu?")
+            print(f"CHYBA: Vyskytla se chyba při ovládání Excelu: {e}")
+            try:
+                if 'excel' in locals():
+                    excel.Quit()
+            except:
+                pass
             continue
         
 
